@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+
+
 import os
 import argparse
 from os.path import join, exists
@@ -10,11 +13,11 @@ from datetime import timedelta
 import queue
 import logging
 from itertools import combinations
-
+from rouge import Rouge
 from cytoolz import curry
 from pyrouge.utils import log
 from pyrouge import Rouge155
-
+from utils import read_jsonl
 from transformers import BertTokenizer, RobertaTokenizer
 
 MAX_LEN = 512
@@ -23,6 +26,7 @@ _ROUGE_PATH = '/home/tasin/evaluation/ROUGE-RELEASE-1.5.5'
 temp_path = './temp' # path to store some temporary files
 
 original_data, sent_ids = [], []
+rouge = Rouge()
 
 def load_jsonl(data_path):
     data = []
@@ -65,6 +69,19 @@ def get_rouge(path, dec):
         rougel = float(line[11].split(' ')[3])
     return (rouge1 + rouge2 + rougel) / 3
 
+def fast_rouge( hypothesis, reference):
+    """
+    Calculate a naive rouge score
+    :param hypothesis: Hypothesis or candidate summary
+    :param reference: Reference text (usually the original article)
+    :return:
+    """
+    if hypothesis == '' or reference == '':
+        return 0.0
+    scores = rouge.get_scores(hypothesis, reference)
+    return (scores[0]['rouge-1']['f'] + scores[0]['rouge-2']['f'] + scores[0]['rouge-l']['f']) / 3
+
+
 @curry
 def get_candidates(tokenizer, cls, sep_id, idx):
 
@@ -106,7 +123,14 @@ def get_candidates(tokenizer, cls, sep_id, idx):
         for j in i:
             sent = data['text'][j]
             dec.append(sent)
+        print(f"idx_path: {idx_path}")
+        print(f"dec: {dec}")
+        print(f"ref: {data['text']}")
+        print()
+        # exit(-1)
+        # score.append((i, fast_rouge(dec, data['text'])))
         score.append((i, get_rouge(idx_path, dec)))
+
     score.sort(key=lambda x : x[1], reverse=True)
     
     # write candidate indices and score
@@ -178,8 +202,8 @@ def get_candidates_mp(args):
 
     # load original data and indices
     global original_data, sent_ids
-    original_data = load_jsonl(args.data_path)
-    sent_ids = load_jsonl(args.index_path)
+    original_data = read_jsonl(args.data_path)
+    sent_ids = read_jsonl(args.index_path)
     n_files = len(original_data)
     assert len(sent_ids) == len(original_data)
     print('total {} documents'.format(n_files))
@@ -222,6 +246,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     assert args.tokenizer in ['bert', 'roberta']
+    print(args.data_path)
     assert exists(args.data_path)
     assert exists(args.index_path)
 
