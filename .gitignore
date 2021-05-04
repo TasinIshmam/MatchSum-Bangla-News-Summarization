@@ -1,7 +1,6 @@
 data
-bert-output
 models
-testing-stuff
+testing-preprocess
 result-old
 result
 .idea
