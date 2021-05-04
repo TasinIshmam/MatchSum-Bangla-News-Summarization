@@ -1,0 +1,16 @@
+For BERT (11849 test cases)
+Start evaluating ROUGE score !!!
+---------------------------------------------
+1 ROUGE-1 Average_R: 0.52385 (95%-conf.int. 0.52124 - 0.52663)
+1 ROUGE-1 Average_P: 0.40413 (95%-conf.int. 0.40145 - 0.40661)
+1 ROUGE-1 Average_F: 0.44257 (95%-conf.int. 0.44046 - 0.44482)
+---------------------------------------------
+1 ROUGE-2 Average_R: 0.24310 (95%-conf.int. 0.24050 - 0.24594)
+1 ROUGE-2 Average_P: 0.18869 (95%-conf.int. 0.18629 - 0.19120)
+1 ROUGE-2 Average_F: 0.20580 (95%-conf.int. 0.20345 - 0.20824)
+---------------------------------------------
+1 ROUGE-L Average_R: 0.47778 (95%-conf.int. 0.47517 - 0.48055)
+1 ROUGE-L Average_P: 0.36925 (95%-conf.int. 0.36664 - 0.37180)
+1 ROUGE-L Average_F: 0.40404 (95%-conf.int. 0.40189 - 0.40637)
+
+Evaluate data in 1939.9 seconds!

@@ -1,0 +1,10 @@
+data
+bert-output
+models
+testing-stuff
+result-old
+result
+.idea
+.vscode
+bert-output
+__pycache__
