@@ -4,7 +4,7 @@
 
 - Run preprocessing (test)   
 ```sh 
-preprocess/get_candidate.py --tokenizer=bert --data_path=./testing-preprocess/eg-data.jsonl --index_path=./testing-preprocess/eg-index.jsonl  --write_path=./testing-preprocess/preprocess-output.jsonl
+python get_candidate.py --tokenizer=bert --data_path=./testing-preprocess/eg-data.jsonl --index_path=./testing-preprocess/eg-index.jsonl  --write_path=./testing-preprocess/preprocess-output.jsonl
 ```
   
 
