@@ -30,3 +30,8 @@ def get_result_path(save_path, cur_model):
     os.makedirs(dec_path)
     os.makedirs(ref_path)
     return dec_path, ref_path
+
+def merge_array_of_strings(str_of_arr: [str])->str:
+    return " ".join(str_of_arr)
+
+

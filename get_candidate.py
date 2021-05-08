@@ -17,7 +17,7 @@ from rouge import Rouge
 from cytoolz import curry
 from pyrouge.utils import log
 from pyrouge import Rouge155
-from utils import read_jsonl
+from utils import read_jsonl, merge_array_of_strings
 from transformers import BertTokenizer, RobertaTokenizer
 
 MAX_LEN = 512
@@ -128,8 +128,8 @@ def get_candidates(tokenizer, cls, sep_id, idx):
         print(f"ref: {data['text']}")
         print()
         # exit(-1)
-        # score.append((i, fast_rouge(dec, data['text'])))
-        score.append((i, get_rouge(idx_path, dec)))
+        score.append((i, fast_rouge(merge_array_of_strings(dec), merge_array_of_strings(data['text']))))
+        # score.append((i, get_rouge(idx_path, dec)))
 
     score.sort(key=lambda x : x[1], reverse=True)
     
