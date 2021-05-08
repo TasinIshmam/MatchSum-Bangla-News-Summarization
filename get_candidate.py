@@ -18,7 +18,7 @@ from cytoolz import curry
 from pyrouge.utils import log
 from pyrouge import Rouge155
 from utils import read_jsonl, merge_array_of_strings
-from transformers import BertTokenizer, RobertaTokenizer
+from transformers import AutoTokenizer, AutoModel
 
 MAX_LEN = 512
 
@@ -185,7 +185,7 @@ def get_candidates(tokenizer, cls, sep_id, idx):
     # write processed data to temporary file
     processed_path = join(temp_path, 'processed')
     with open(join(processed_path, '{}.json'.format(idx)), 'w') as f:
-        json.dump(data, f, indent=4) 
+        json.dump(data, f, indent=4, ensure_ascii=False)
     
     sp.call('rm -r ' + idx_path, shell=True)
 
@@ -193,11 +193,11 @@ def get_candidates_mp(args):
     
     # choose tokenizer
     if args.tokenizer == 'bert':
-        tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+        tokenizer = AutoTokenizer.from_pretrained("sagorsarker/bangla-bert-base")
         cls, sep = '[CLS]', '[SEP]'
     else:
-        tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
-        cls, sep = '<s>', '</s>'
+        raise Exception("Invalid model/tokenizer selected")
+
     sep_id = tokenizer.encode(sep, add_special_tokens=False)
 
     # load original data and indices
@@ -226,7 +226,7 @@ def get_candidates_mp(args):
         with open(join(processed_path, '{}.json'.format(i))) as f:
             data = json.loads(f.read())
         with open(args.write_path, 'a') as f:
-            print(json.dumps(data), file=f)
+            print(json.dumps(data, ensure_ascii=False), file=f)
     
     os.system('rm -r {}'.format(temp_path))
 
