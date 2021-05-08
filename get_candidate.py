@@ -19,14 +19,16 @@ from pyrouge.utils import log
 from pyrouge import Rouge155
 from utils import read_jsonl, merge_array_of_strings
 from transformers import AutoTokenizer, AutoModel
+from tqdm import tqdm
 
 MAX_LEN = 512
 
 _ROUGE_PATH = '/home/tasin/evaluation/ROUGE-RELEASE-1.5.5'
-temp_path = './temp' # path to store some temporary files
+temp_path = './temp'  # path to store some temporary files
 
 original_data, sent_ids = [], []
 rouge = Rouge()
+
 
 def load_jsonl(data_path):
     data = []
@@ -34,6 +36,7 @@ def load_jsonl(data_path):
         for line in f:
             data.append(json.loads(line))
     return data
+
 
 def get_rouge(path, dec):
     log.get_global_console_logger().setLevel(logging.WARNING)
@@ -58,9 +61,9 @@ def get_rouge(path, dec):
             join(tmp_dir, 'settings.xml'), system_id=1
         )
         cmd = (join(_ROUGE_PATH, 'ROUGE-1.5.5.pl')
-            + ' -e {} '.format(join(_ROUGE_PATH, 'data'))
-            + cmd
-            + ' -a {}'.format(join(tmp_dir, 'settings.xml')))
+               + ' -e {} '.format(join(_ROUGE_PATH, 'data'))
+               + cmd
+               + ' -a {}'.format(join(tmp_dir, 'settings.xml')))
         output = sp.check_output(cmd.split(' '), universal_newlines=True)
 
         line = output.split('\n')
@@ -69,7 +72,8 @@ def get_rouge(path, dec):
         rougel = float(line[11].split(' ')[3])
     return (rouge1 + rouge2 + rougel) / 3
 
-def fast_rouge( hypothesis, reference):
+
+def fast_rouge(hypothesis, reference):
     """
     Calculate a naive rouge score
     :param hypothesis: Hypothesis or candidate summary
@@ -84,19 +88,18 @@ def fast_rouge( hypothesis, reference):
 
 @curry
 def get_candidates(tokenizer, cls, sep_id, idx):
-
     idx_path = join(temp_path, str(idx))
-    
+
     # create some temporary files to calculate ROUGE
     sp.call('mkdir ' + idx_path, shell=True)
     sp.call('mkdir ' + join(idx_path, 'decode'), shell=True)
     sp.call('mkdir ' + join(idx_path, 'reference'), shell=True)
-    
+
     # load data
     data = {}
     data['text'] = original_data[idx]['text']
     data['summary'] = original_data[idx]['summary']
-    
+
     # write reference summary to temporary files
     ref_dir = join(idx_path, 'reference')
     with open(join(ref_dir, '0.ref'), 'w') as f:
@@ -112,7 +115,7 @@ def get_candidates(tokenizer, cls, sep_id, idx):
     indices += list(combinations(sent_id, 3))
     if len(sent_id) < 2:
         indices = [sent_id]
-    
+
     # get ROUGE score for each candidate summary and sort them in descending order
     score = []
     for i in indices:
@@ -123,16 +126,16 @@ def get_candidates(tokenizer, cls, sep_id, idx):
         for j in i:
             sent = data['text'][j]
             dec.append(sent)
-        print(f"idx_path: {idx_path}")
-        print(f"dec: {dec}")
-        print(f"ref: {data['text']}")
-        print()
+        # print(f"idx_path: {idx_path}")
+        # print(f"dec: {dec}")
+        # print(f"ref: {data['text']}")
+        # print()
         # exit(-1)
         score.append((i, fast_rouge(merge_array_of_strings(dec), merge_array_of_strings(data['text']))))
         # score.append((i, get_rouge(idx_path, dec)))
 
-    score.sort(key=lambda x : x[1], reverse=True)
-    
+    score.sort(key=lambda x: x[1], reverse=True)
+
     # write candidate indices and score
     data['ext_idx'] = sent_id
     data['indices'] = []
@@ -150,13 +153,13 @@ def get_candidates(tokenizer, cls, sep_id, idx):
         cur_summary = cur_summary[:MAX_LEN]
         cur_summary = ' '.join(cur_summary)
         candidate_summary.append(cur_summary)
-    
+
     data['candidate_id'] = []
     for summary in candidate_summary:
         token_ids = tokenizer.encode(summary, add_special_tokens=False)[:(MAX_LEN - 1)]
         token_ids += sep_id
         data['candidate_id'].append(token_ids)
-    
+
     # tokenize and get text_id
     text = [cls]
     for sent in data['text']:
@@ -168,10 +171,9 @@ def get_candidates(tokenizer, cls, sep_id, idx):
     # [:(MAX_LEN - 1)] means that we only take the first 511 tokens and ignore the rest.
     # We can safely ignore the compiler warning about number of tokens being too many.
 
-
     token_ids += sep_id
     data['text_id'] = token_ids
-    
+
     # tokenize and get summary_id
     summary = [cls]
     for sent in data['summary']:
@@ -181,16 +183,16 @@ def get_candidates(tokenizer, cls, sep_id, idx):
     token_ids = tokenizer.encode(summary, add_special_tokens=False)[:(MAX_LEN - 1)]
     token_ids += sep_id
     data['summary_id'] = token_ids
-    
+
     # write processed data to temporary file
     processed_path = join(temp_path, 'processed')
     with open(join(processed_path, '{}.json'.format(idx)), 'w') as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
-    
+
     sp.call('rm -r ' + idx_path, shell=True)
 
+
 def get_candidates_mp(args):
-    
     # choose tokenizer
     if args.tokenizer == 'bert':
         tokenizer = AutoTokenizer.from_pretrained("sagorsarker/bangla-bert-base")
@@ -214,35 +216,35 @@ def get_candidates_mp(args):
     # use multi-processing to get candidate summaries
     start = time()
     print('start getting candidates with multi-processing !!!')
-    
+
     with mp.Pool() as pool:
         list(pool.imap_unordered(get_candidates(tokenizer, cls, sep_id), range(n_files), chunksize=64))
-    
-    print('finished in {}'.format(timedelta(seconds=time()-start)))
-    
+
+    print('finished in {}'.format(timedelta(seconds=time() - start)))
+
     # write processed data
     print('start writing {} files'.format(n_files))
-    for i in range(n_files):
+    for i in tqdm(range(n_files)):
         with open(join(processed_path, '{}.json'.format(i))) as f:
             data = json.loads(f.read())
         with open(args.write_path, 'a') as f:
             print(json.dumps(data, ensure_ascii=False), file=f)
-    
+
     os.system('rm -r {}'.format(temp_path))
 
+
 if __name__ == '__main__':
-    
     parser = argparse.ArgumentParser(
         description='Process truncated documents to obtain candidate summaries'
     )
     parser.add_argument('--tokenizer', type=str, required=True,
-        help='BERT/RoBERTa')
+                        help='BERT/RoBERTa')
     parser.add_argument('--data_path', type=str, required=True,
-        help='path to the original dataset, the original dataset should contain text and summary')
+                        help='path to the original dataset, the original dataset should contain text and summary')
     parser.add_argument('--index_path', type=str, required=True,
-        help='indices of the remaining sentences of the truncated document')
+                        help='indices of the remaining sentences of the truncated document')
     parser.add_argument('--write_path', type=str, required=True,
-        help='path to store the processed dataset')
+                        help='path to store the processed dataset')
 
     args = parser.parse_args()
     assert args.tokenizer in ['bert', 'roberta']

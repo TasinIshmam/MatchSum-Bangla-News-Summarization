@@ -3,10 +3,19 @@
 #### Preprocessing
 
 - Run preprocessing (test)   
-```sh 
+```shell  
 python get_candidate.py --tokenizer=bert --data_path=./testing-preprocess/eg-data.jsonl --index_path=./testing-preprocess/eg-index.jsonl  --write_path=./testing-preprocess/preprocess-output.jsonl
 ```
-  
+
+- Run preprocessing (bangla example)
+```shell
+python get_candidate.py --tokenizer=bert --data_path=./data-bangla/data-eg-matchsum-format.jsonl --index_path=./data-bangla/sentid-eg-matchsum-format.jsonl  --write_path=./testing-preprocess/preprocess-output-bangla-eg.jsonl
+```
+- Run preprocessing (Bangla all) 
+```shell
+python get_candidate.py --tokenizer=bert --data_path=./data-bangla/data-all-array-of-strings-matchsum-format.jsonl --index_path=./data-bangla/sentid-all-matchsum-format.jsonl  --write_path=./data-bangla/preprocess-output-bangla-all.jsonl
+```
+
 
 #### Validation/Test 
 
