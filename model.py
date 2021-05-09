@@ -2,7 +2,7 @@ import torch
 from torch import nn
 from torch.nn import init
 
-from transformers import BertModel, RobertaModel
+from transformers import AutoModel
 
 class MatchSum(nn.Module):
     
@@ -10,12 +10,12 @@ class MatchSum(nn.Module):
         super(MatchSum, self).__init__()
         
         self.hidden_size = hidden_size
-        self.candidate_num  = candidate_num
+        self.candidate_num = candidate_num
         
         if encoder == 'bert':
-            self.encoder = BertModel.from_pretrained('bert-base-uncased')
+            self.encoder = AutoModel.from_pretrained('sagorsarker/bangla-bert-base')
         else:
-            self.encoder = RobertaModel.from_pretrained('roberta-base')
+            raise Exception("Invalid model. Only bert is supported.")
 
     def forward(self, text_id, candidate_id, summary_id):
         
