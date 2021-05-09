@@ -102,6 +102,12 @@ def get_candidates(tokenizer, cls, sep_id, idx):
     data['text'] = original_data[idx]['text']
     data['summary'] = original_data[idx]['summary']
 
+    data_absolute_idx = original_data[idx]["absolute_idx"]
+
+    if data_absolute_idx % 1000 == 0:
+        print(f"Currently working on entry with absolute idx: {data_absolute_idx}")
+
+
     # write reference summary to temporary files
     ref_dir = join(idx_path, 'reference')
     with open(join(ref_dir, '0.ref'), 'w') as f:
