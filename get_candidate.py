@@ -21,11 +21,11 @@ from utils import read_jsonl, merge_array_of_strings
 from transformers import AutoTokenizer, AutoModel
 from tqdm import tqdm
 
-sys.setrecursionlimit(1024 * 1024 + 10)
+sys.setrecursionlimit(512 * 512 + 10)
 
 MAX_LEN = 512
 
-_ROUGE_PATH = '/home/tasin/evaluation/ROUGE-RELEASE-1.5.5'
+_ROUGE_PATH = '/home/ags/Softwares/rouge/evaluation/ROUGE-RELEASE-1.5.5'
 temp_path = './temp'  # path to store some temporary files
 
 original_data, sent_ids = [], []
@@ -101,11 +101,6 @@ def get_candidates(tokenizer, cls, sep_id, idx):
     data = {}
     data['text'] = original_data[idx]['text']
     data['summary'] = original_data[idx]['summary']
-
-    data_absolute_idx = original_data[idx]["absolute_idx"]
-
-    if data_absolute_idx % 1000 == 0:
-        print(f"Currently working on entry with absolute idx: {data_absolute_idx}")
 
     # write reference summary to temporary files
     ref_dir = join(idx_path, 'reference')
