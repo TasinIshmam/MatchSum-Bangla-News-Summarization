@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-
+import sys
 import os
 import argparse
 from os.path import join, exists
@@ -21,9 +21,11 @@ from utils import read_jsonl, merge_array_of_strings
 from transformers import AutoTokenizer, AutoModel
 from tqdm import tqdm
 
+sys.setrecursionlimit(512 * 512 + 10)
+
 MAX_LEN = 512
 
-_ROUGE_PATH = '/home/tasin/evaluation/ROUGE-RELEASE-1.5.5'
+_ROUGE_PATH = '/home/ags/Softwares/rouge/evaluation/ROUGE-RELEASE-1.5.5'
 temp_path = './temp'  # path to store some temporary files
 
 original_data, sent_ids = [], []
