@@ -15,7 +15,7 @@ from typing import *
 from pyrouge import Rouge155
 from pyrouge.utils import log
 from rouge import Rouge
-from utils import merge_array_of_strings
+from utils import merge_array_of_strings, eval_rouge_bangla
 
 from fastNLP.core.losses import LossBase
 from fastNLP.core.metrics import MetricBase
@@ -172,7 +172,7 @@ class MatchRougeMetric(MetricBase):
                     print(sent, file=f)
         
         print('Start evaluating ROUGE score !!!')
-        R_1, R_2, R_L = MatchRougeMetric.eval_rouge_bangla(merge_array_of_strings(dec),merge_array_of_strings(ref))
+        R_1, R_2, R_L = eval_rouge_bangla(merge_array_of_strings(dec),merge_array_of_strings(ref))
         eval_result = {'ROUGE-1': R_1, 'ROUGE-2': R_2, 'ROUGE-L':R_L}
 
         if reset == True:
@@ -182,14 +182,7 @@ class MatchRougeMetric(MetricBase):
             self.start = time()
         return eval_result
 
-    @staticmethod
-    def eval_rouge_bangla( dec: str, ref: str) -> Tuple[float, float, float]:
-        # todo: Fix this to use a global Rouge() instance. Possibly shift to utils
-        rouge = Rouge()
-        if dec == '' or ref == '':
-            return 0.0, 0.0, 0.0
-        scores = rouge.get_scores(dec, ref)
-        return scores[0]['rouge-1']['f'], scores[0]['rouge-2']['f'], scores[0]['rouge-l']['f']
+
 
     @staticmethod
     def eval_rouge(dec_dir, ref_dir, Print=True):

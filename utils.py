@@ -1,6 +1,23 @@
 import os
 from os.path import exists, join
 import json
+from typing import *
+from rouge import Rouge
+
+rouge = Rouge()
+
+
+def eval_rouge_bangla( dec: str, ref: str) -> Tuple[float, float, float]:
+    """
+    Use Rouge library to naively calculate rouge score for Bangla
+    :param dec: Hypothesis/candidate summary
+    :param ref: Ground Truth summary
+    :return:
+    """
+    if dec == '' or ref == '':
+        return 0.0, 0.0, 0.0
+    scores = rouge.get_scores(dec, ref)
+    return scores[0]['rouge-1']['f'], scores[0]['rouge-2']['f'], scores[0]['rouge-l']['f']
 
 def read_jsonl(path):
     data = []
