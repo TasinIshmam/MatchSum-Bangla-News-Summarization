@@ -235,7 +235,7 @@ def get_candidates_mp(args):
     for i in tqdm(range(n_files)):
         with open(join(processed_path, '{}.json'.format(i))) as f:
             data = json.loads(f.read())
-        with open(args.write_path, 'a') as f:
+        with open(args.write_path, 'w') as f:
             print(json.dumps(data, ensure_ascii=False), file=f)
 
     os.system('rm -r {}'.format(temp_path))

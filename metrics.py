@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 
 import json
@@ -9,15 +11,17 @@ import subprocess as sp
 from datetime import timedelta
 from time import time
 from itertools import combinations
-
+from typing import *
 from pyrouge import Rouge155
 from pyrouge.utils import log
 from rouge import Rouge
+from utils import merge_array_of_strings
 
 from fastNLP.core.losses import LossBase
 from fastNLP.core.metrics import MetricBase
 
 _ROUGE_PATH = '/home/ags/Softwares/rouge/evaluation/ROUGE-RELEASE-1.5.5'
+sys.setrecursionlimit(512 * 512 + 10)
 
 class MarginRankingLoss(LossBase):      
     
@@ -81,6 +85,8 @@ class ValidMetric(MetricBase):
             return 0.0
         scores = self.rouge.get_scores(dec, ref)
         return (scores[0]['rouge-1']['f'] + scores[0]['rouge-2']['f'] + scores[0]['rouge-l']['f']) / 3
+
+
 
     def evaluate(self, score):
         batch_size = score.size(0)
@@ -151,6 +157,7 @@ class MatchRougeMetric(MetricBase):
         for i, ext in enumerate(self.ext):
             sent_ids = self.data[i]['indices'][ext]
             dec, ref = [], []
+
             
             for j in sent_ids:
                 dec.append(self.data[i]['text'][j])
@@ -165,7 +172,7 @@ class MatchRougeMetric(MetricBase):
                     print(sent, file=f)
         
         print('Start evaluating ROUGE score !!!')
-        R_1, R_2, R_L = MatchRougeMetric.eval_rouge(self.dec_path, self.ref_path)
+        R_1, R_2, R_L = MatchRougeMetric.eval_rouge_bangla(merge_array_of_strings(dec),merge_array_of_strings(ref))
         eval_result = {'ROUGE-1': R_1, 'ROUGE-2': R_2, 'ROUGE-L':R_L}
 
         if reset == True:
@@ -174,7 +181,16 @@ class MatchRougeMetric(MetricBase):
             self.data = []
             self.start = time()
         return eval_result
-        
+
+    @staticmethod
+    def eval_rouge_bangla( dec: str, ref: str) -> Tuple[float, float, float]:
+        # todo: Fix this to use a global Rouge() instance. Possibly shift to utils
+        rouge = Rouge()
+        if dec == '' or ref == '':
+            return 0.0, 0.0, 0.0
+        scores = rouge.get_scores(dec, ref)
+        return scores[0]['rouge-1']['f'], scores[0]['rouge-2']['f'], scores[0]['rouge-l']['f']
+
     @staticmethod
     def eval_rouge(dec_dir, ref_dir, Print=True):
         assert _ROUGE_PATH is not None

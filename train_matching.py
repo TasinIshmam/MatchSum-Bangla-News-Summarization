@@ -101,7 +101,8 @@ def test_model(args):
 
         # load model
         model = torch.load(join(args.save_path, cur_model))
-    
+        # model = MatchSum(args.candidate_num, args.encoder)
+
         # configure testing
         dec_path, ref_path = get_result_path(args.save_path, cur_model)
         test_metric = MatchRougeMetric(data=read_jsonl(data_paths['test']), dec_path=dec_path, 
