@@ -79,13 +79,14 @@ def fast_rouge(hypothesis, reference):
     """
     Calculate a naive rouge score
     :param hypothesis: Hypothesis or candidate summary
-    :param reference: Reference text (usually the original article)
+    :param reference: Reference summary (ground truth)
     :return:
     """
     if hypothesis == '' or reference == '':
         return 0.0
     scores = rouge.get_scores(hypothesis, reference)
     return (scores[0]['rouge-1']['f'] + scores[0]['rouge-2']['f'] + scores[0]['rouge-l']['f']) / 3
+
 
 
 @curry
@@ -199,7 +200,6 @@ def get_candidates(tokenizer, cls, sep_id, idx):
 
     sp.call('rm -r ' + idx_path, shell=True)
 
-
 def get_candidates_mp(args):
     # choose tokenizer
     if args.tokenizer == 'bert':
@@ -235,7 +235,7 @@ def get_candidates_mp(args):
     for i in tqdm(range(n_files)):
         with open(join(processed_path, '{}.json'.format(i))) as f:
             data = json.loads(f.read())
-        with open(args.write_path, 'w') as f:
+        with open(args.write_path, 'a') as f:
             print(json.dumps(data, ensure_ascii=False), file=f)
 
     os.system('rm -r {}'.format(temp_path))
