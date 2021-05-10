@@ -18,7 +18,7 @@ from cytoolz import curry
 from pyrouge.utils import log
 from pyrouge import Rouge155
 from utils import read_jsonl, merge_array_of_strings
-from transformers import AutoTokenizer, AutoModel
+from transformers import AutoTokenizer
 from tqdm import tqdm
 
 sys.setrecursionlimit(512 * 512 + 10)
@@ -78,7 +78,7 @@ def get_rouge(path, dec):
 def fast_rouge(hypothesis, reference):
     """
     Calculate a naive rouge score
-    :param hypothesis: Hypothesis or candidate summary
+    :param hypothesis: Hypothesis or candidate summary (dec)
     :param reference: Reference summary (ground truth)
     :return:
     """
@@ -140,7 +140,7 @@ def get_candidates(tokenizer, cls, sep_id, idx):
         # print(f"ref: {data['text']}")
         # print()
         # exit(-1)
-        score.append((i, fast_rouge(merge_array_of_strings(dec), merge_array_of_strings(data['text']))))
+        score.append((i, fast_rouge(merge_array_of_strings(dec), merge_array_of_strings(data['summary']))))
         # score.append((i, get_rouge(idx_path, dec)))
 
     score.sort(key=lambda x: x[1], reverse=True)
