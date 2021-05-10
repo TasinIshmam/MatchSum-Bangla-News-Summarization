@@ -30,6 +30,7 @@ def configure_training(args):
     params['warmup_steps']  = args.warmup_steps
     params['n_epochs']      = args.n_epochs
     params['valid_steps']   = args.valid_steps
+    params['checkpoint_file'] = args.checkpoint_file
     return devices, params
 
 def train_model(args):
@@ -56,7 +57,10 @@ def train_model(args):
     print(devices)
 
     # configure model
-    model = MatchSum(args.candidate_num, args.encoder)
+    if train_params["checkpoint_file"] is not None:  # load checkpoint for training
+        model = torch.load(train_params["checkpoint_file"])
+    else:
+        model = MatchSum(args.candidate_num, args.encoder)
     optimizer = Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=0)
     
     callbacks = [MyCallback(args), 
@@ -108,7 +112,7 @@ def test_model(args):
         test_metric = MatchRougeMetric(data=read_jsonl(data_paths['test']), dec_path=dec_path, 
                                   ref_path=ref_path, n_total = len(test_set))
         tester = Tester(data=test_set, model=model, metrics=[test_metric], 
-                        batch_size=args.batch_size, device=device, use_tqdm=False)
+                        batch_size=args.batch_size, device=device, use_tqdm=True)
         tester.test()
 
 if __name__ == '__main__':
@@ -142,6 +146,8 @@ if __name__ == '__main__':
                         help='total number of training epochs', type=int)
     parser.add_argument('--valid_steps', default=1000,
                         help='number of update steps for validation and saving checkpoint', type=int)
+    parser.add_argument('--checkpoint_file', default=None,
+                        help='Use checkpoint Weight file to restart training', type=str)
 
     args = parser.parse_known_args()[0]
     
