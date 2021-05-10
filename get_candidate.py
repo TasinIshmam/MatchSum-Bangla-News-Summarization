@@ -13,11 +13,10 @@ from datetime import timedelta
 import queue
 import logging
 from itertools import combinations
-from rouge import Rouge
 from cytoolz import curry
 from pyrouge.utils import log
 from pyrouge import Rouge155
-from utils import read_jsonl, merge_array_of_strings
+from utils import read_jsonl, merge_array_of_strings, fast_rouge
 from transformers import AutoTokenizer
 from tqdm import tqdm
 
@@ -29,7 +28,6 @@ _ROUGE_PATH = '/home/ags/Softwares/rouge/evaluation/ROUGE-RELEASE-1.5.5'
 temp_path = './temp'  # path to store some temporary files
 
 original_data, sent_ids = [], []
-rouge = Rouge()
 
 
 def load_jsonl(data_path):
@@ -74,18 +72,6 @@ def get_rouge(path, dec):
         rougel = float(line[11].split(' ')[3])
     return (rouge1 + rouge2 + rougel) / 3
 
-
-def fast_rouge(hypothesis, reference):
-    """
-    Calculate a naive rouge score
-    :param hypothesis: Hypothesis or candidate summary (dec)
-    :param reference: Reference summary (ground truth)
-    :return:
-    """
-    if hypothesis == '' or reference == '':
-        return 0.0
-    scores = rouge.get_scores(hypothesis, reference)
-    return (scores[0]['rouge-1']['f'] + scores[0]['rouge-2']['f'] + scores[0]['rouge-l']['f']) / 3
 
 
 

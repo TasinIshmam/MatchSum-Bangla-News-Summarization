@@ -15,7 +15,7 @@ from typing import *
 from pyrouge import Rouge155
 from pyrouge.utils import log
 from rouge import Rouge
-from utils import merge_array_of_strings, eval_rouge_bangla
+from utils import merge_array_of_strings, eval_rouge_bangla, fast_rouge
 
 from fastNLP.core.losses import LossBase
 from fastNLP.core.metrics import MetricBase
@@ -108,7 +108,7 @@ class ValidMetric(MetricBase):
             for j in ext_idx:
                 dec.append(self.data[self.cur_idx]['text'][j])
             dec = ' '.join(dec)
-            self.ROUGE += self.fast_rouge(dec, ref)
+            self.ROUGE += fast_rouge(dec, ref)
             self.cur_idx += 1
 
     def get_metric(self, reset=True):

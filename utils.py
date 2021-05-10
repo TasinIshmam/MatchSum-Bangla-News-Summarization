@@ -19,6 +19,22 @@ def eval_rouge_bangla( dec: str, ref: str) -> Tuple[float, float, float]:
     scores = rouge.get_scores(dec, ref)
     return scores[0]['rouge-1']['f'], scores[0]['rouge-2']['f'], scores[0]['rouge-l']['f']
 
+
+def fast_rouge(dec : str, reference : str) -> float:
+    """
+    Calculate a naive rouge score
+    :param dec: Hypothesis or candidate summary
+    :param reference: Reference summary (ground truth)
+    :return:
+    """
+    if dec == '' or reference == '':
+        return 0.0
+    scores = rouge.get_scores(dec, reference)
+    return (scores[0]['rouge-1']['f'] + scores[0]['rouge-2']['f'] + scores[0]['rouge-l']['f']) / 3
+
+
+
+
 def read_jsonl(path):
     data = []
     with open(path) as f:
