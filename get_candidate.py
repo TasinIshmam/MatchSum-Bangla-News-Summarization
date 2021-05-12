@@ -83,8 +83,11 @@ def get_candidates(tokenizer, cls, sep_id, idx):
     data['summary'] = original_data[idx]['summary']
 
     data_absolute_idx = original_data[idx]["absolute_idx"]
+    sent_id_absolute_idx = sent_ids[idx]['absolute_idx']
 
-    if data_absolute_idx % 200 == 0:
+    assert data_absolute_idx == sent_id_absolute_idx
+
+    if data_absolute_idx % 1000 == 0:
         print(f"Currently working on entry with absolute idx: {data_absolute_idx}")
 
 
@@ -99,6 +102,7 @@ def get_candidates(tokenizer, cls, sep_id, idx):
     # then select any 2 or 3 sentences to form a candidate summary, so there are C(5,2)+C(5,3)=20 candidate summaries.
     # if you want to process other datasets, you may need to adjust these numbers according to specific situation.
     sent_id = sent_ids[idx]['sent_id'][:5]
+
     indices = list(combinations(sent_id, 2))
     indices += list(combinations(sent_id, 3))
     if len(sent_id) < 2:
@@ -171,7 +175,7 @@ def get_candidates(tokenizer, cls, sep_id, idx):
     token_ids = tokenizer.encode(summary, add_special_tokens=False)[:(MAX_LEN - 1)]
     token_ids += sep_id
     data['summary_id'] = token_ids
-
+    data["absolute_idx"] = data_absolute_idx
     # write processed data to temporary file
     processed_path = join(temp_path, 'processed')
     with open(join(processed_path, '{}.json'.format(idx)), 'w') as f:
