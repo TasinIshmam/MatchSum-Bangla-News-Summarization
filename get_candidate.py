@@ -77,12 +77,12 @@ def get_rouge(path, dec):
 
 @curry
 def get_candidates(tokenizer, cls, sep_id, idx):
-    idx_path = join(temp_path, str(idx))
+    # idx_path = join(temp_path, str(idx))
 
     # create some temporary files to calculate ROUGE
-    sp.call('mkdir ' + idx_path, shell=True)
-    sp.call('mkdir ' + join(idx_path, 'decode'), shell=True)
-    sp.call('mkdir ' + join(idx_path, 'reference'), shell=True)
+    # sp.call('mkdir ' + idx_path, shell=True)
+    # sp.call('mkdir ' + join(idx_path, 'decode'), shell=True)
+    # sp.call('mkdir ' + join(idx_path, 'reference'), shell=True)
 
     # load data
     data = {}
@@ -91,15 +91,15 @@ def get_candidates(tokenizer, cls, sep_id, idx):
 
     data_absolute_idx = original_data[idx]["absolute_idx"]
 
-    if data_absolute_idx % 1000 == 0:
+    if data_absolute_idx % 200 == 0:
         print(f"Currently working on entry with absolute idx: {data_absolute_idx}")
 
 
     # write reference summary to temporary files
-    ref_dir = join(idx_path, 'reference')
-    with open(join(ref_dir, '0.ref'), 'w') as f:
-        for sentence in data['summary']:
-            print(sentence, file=f)
+    # ref_dir = join(idx_path, 'reference')
+    # with open(join(ref_dir, '0.ref'), 'w') as f:
+    #     for sentence in data['summary']:
+    #         print(sentence, file=f)
 
     # get candidate summaries
     # here is for CNN/DM: truncate each document into the 5 most important sentences (using BertExt), 
@@ -184,7 +184,7 @@ def get_candidates(tokenizer, cls, sep_id, idx):
     with open(join(processed_path, '{}.json'.format(idx)), 'w') as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 
-    sp.call('rm -r ' + idx_path, shell=True)
+    # sp.call('rm -r ' + idx_path, shell=True)
 
 def get_candidates_mp(args):
     # choose tokenizer
