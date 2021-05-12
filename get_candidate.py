@@ -253,7 +253,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     assert args.tokenizer in ['bert', 'roberta']
     print(args.data_path)
-    print(f"[DEBUG] Args: args")
+    print(f"[DEBUG] Args: {args}")
     assert exists(args.data_path)
     assert exists(args.index_path)
 
