@@ -203,7 +203,9 @@ def get_candidates_mp(args):
         end_idx = min(end_idx, len(original_data))
 
     original_data = original_data[start_idx: end_idx]
-    sent_ids = original_data[start_idx: end_idx]
+    sent_ids = sent_ids[start_idx: end_idx]
+
+    print(f"Length of original data: {len(original_data)}")
 
     n_files = len(original_data)
     assert len(sent_ids) == len(original_data)
