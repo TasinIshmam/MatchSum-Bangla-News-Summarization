@@ -30,13 +30,6 @@ temp_path = './temp'  # path to store some temporary files
 original_data, sent_ids = [], []
 
 
-def load_jsonl(data_path):
-    data = []
-    with open(data_path) as f:
-        for line in f:
-            data.append(json.loads(line))
-    return data
-
 
 def get_rouge(path, dec):
     log.get_global_console_logger().setLevel(logging.WARNING)
@@ -200,6 +193,18 @@ def get_candidates_mp(args):
     global original_data, sent_ids
     original_data = read_jsonl(args.data_path)
     sent_ids = read_jsonl(args.index_path)
+
+    start_idx = args.start_idx
+    end_idx = args.end_idx
+
+    if end_idx == -1:
+        end_idx = len(original_data)
+    else:
+        end_idx = min(end_idx, len(original_data))
+
+    original_data = original_data[start_idx: end_idx]
+    sent_ids = original_data[start_idx: end_idx]
+
     n_files = len(original_data)
     assert len(sent_ids) == len(original_data)
     print('total {} documents'.format(n_files))
@@ -239,10 +244,16 @@ if __name__ == '__main__':
                         help='indices of the remaining sentences of the truncated document')
     parser.add_argument('--write_path', type=str, required=True,
                         help='path to store the processed dataset')
+    parser.add_argument('--start_idx', default=0,
+                        help='start_idx of data to process', type=int)
+
+    parser.add_argument('--end_idx', default=-1,
+                        help='end_idx of data to process', type=int)
 
     args = parser.parse_args()
     assert args.tokenizer in ['bert', 'roberta']
     print(args.data_path)
+    print(f"[DEBUG] Args: args")
     assert exists(args.data_path)
     assert exists(args.index_path)
 
