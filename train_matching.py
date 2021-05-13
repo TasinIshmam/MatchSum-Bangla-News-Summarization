@@ -16,7 +16,7 @@ from metrics import MarginRankingLoss, ValidMetric, MatchRougeMetric
 from callback import MyCallback
 from fastNLP.core.trainer import Trainer
 from fastNLP.core.tester import Tester
-from fastNLP.core.callback import SaveModelCallback
+from fastNLP.core.callback import SaveModelCallback, CheckPointCallback
 
 def configure_training(args):
     devices = [int(gpu) for gpu in args.gpus.split(',')]
@@ -62,9 +62,14 @@ def train_model(args):
     else:
         model = MatchSum(args.candidate_num, args.encoder)
     optimizer = Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=0)
-    
+
+
     callbacks = [MyCallback(args), 
                  SaveModelCallback(save_dir=args.save_path, top=5)]
+
+    # load checkpoint if possible.
+    if train_params["checkpoint_file"] is not None:
+        callbacks.append(CheckPointCallback(train_params["checkpoint_file"]))
     
     criterion = MarginRankingLoss(args.margin)
     val_metric = [ValidMetric(save_path=args.save_path, data=read_jsonl(data_paths['val']))]
