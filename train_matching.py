@@ -57,10 +57,10 @@ def train_model(args):
     print(devices)
 
     # configure model
-    if train_params["checkpoint_file"] is not None:  # load checkpoint for training
-        model = torch.load(train_params["checkpoint_file"])
-    else:
-        model = MatchSum(args.candidate_num, args.encoder)
+    # if train_params["checkpoint_file"] is not None:  # load checkpoint for training
+    #     model = torch.load(train_params["checkpoint_file"])
+    # else:
+    model = MatchSum(args.candidate_num, args.encoder)
     optimizer = Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=0)
 
 
