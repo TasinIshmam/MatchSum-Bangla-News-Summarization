@@ -57,10 +57,11 @@ def train_model(args):
     print(devices)
 
     # configure model
-    # if train_params["checkpoint_file"] is not None:  # load checkpoint for training
-    #     model = torch.load(train_params["checkpoint_file"])
-    # else:
-    model = MatchSum(args.candidate_num, args.encoder)
+    if train_params["checkpoint_file"] is not None:  # load checkpoint for training
+        model = torch.load(train_params["checkpoint_file"])
+    else:
+        model = MatchSum(args.candidate_num, args.encoder)
+
     optimizer = Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=0)
 
 
@@ -68,8 +69,8 @@ def train_model(args):
                  SaveModelCallback(save_dir=args.save_path, top=5)]
 
     # load checkpoint if possible.
-    if train_params["checkpoint_file"] is not None:
-        callbacks.append(CheckPointCallback(train_params["checkpoint_file"]))
+    # if train_params["checkpoint_file"] is not None:
+    #     callbacks.append(CheckPointCallback(train_params["checkpoint_file"]))
     
     criterion = MarginRankingLoss(args.margin)
     val_metric = [ValidMetric(save_path=args.save_path, data=read_jsonl(data_paths['val']))]
