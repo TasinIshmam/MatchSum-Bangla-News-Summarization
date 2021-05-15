@@ -16,7 +16,7 @@ from metrics import MarginRankingLoss, ValidMetric, MatchRougeMetric
 from callback import MyCallback
 from fastNLP.core.trainer import Trainer
 from fastNLP.core.tester import Tester
-from fastNLP.core.callback import SaveModelCallback, CheckPointCallback
+from fastNLP.core.callback import SaveModelCallback
 
 def configure_training(args):
     devices = [int(gpu) for gpu in args.gpus.split(',')]
