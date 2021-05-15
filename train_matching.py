@@ -16,7 +16,7 @@ from metrics import MarginRankingLoss, ValidMetric, MatchRougeMetric
 from callback import MyCallback
 from fastNLP.core.trainer import Trainer
 from fastNLP.core.tester import Tester
-from fastNLP.core.callback import SaveModelCallback
+from fastNLP.core.callback import SaveModelCallback, CheckPointCallback
 
 def configure_training(args):
     devices = [int(gpu) for gpu in args.gpus.split(',')]
@@ -57,20 +57,20 @@ def train_model(args):
     print(devices)
 
     # configure model
-    if train_params["checkpoint_file"] is not None:  # load checkpoint for training
-        model = torch.load(train_params["checkpoint_file"])
-    else:
-        model = MatchSum(args.candidate_num, args.encoder)
+    # if train_params["checkpoint_file"] is not None:  # load checkpoint for training
+    #     model = torch.load(train_params["checkpoint_file"])
+    # else:
 
+    model = MatchSum(args.candidate_num, args.encoder)
     optimizer = Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=0)
 
 
     callbacks = [MyCallback(args), 
                  SaveModelCallback(save_dir=args.save_path, top=5)]
 
-    # load checkpoint if possible.
-    # if train_params["checkpoint_file"] is not None:
-    #     callbacks.append(CheckPointCallback(train_params["checkpoint_file"]))
+    # load checkpoint if possible:
+    if train_params["checkpoint_file"] is not None:
+        callbacks.append(CheckPointCallback(train_params["checkpoint_file"], delete_when_train_finish=False))
     
     criterion = MarginRankingLoss(args.margin)
     val_metric = [ValidMetric(save_path=args.save_path, data=read_jsonl(data_paths['val']))]
@@ -154,6 +154,7 @@ if __name__ == '__main__':
                         help='number of update steps for validation and saving checkpoint', type=int)
     parser.add_argument('--checkpoint_file', default=None,
                         help='Use checkpoint Weight file to restart training', type=str)
+
 
     args = parser.parse_known_args()[0]
     
