@@ -86,7 +86,7 @@ def train_model(args):
     
     print('Start training with the following hyper-parameters:')
     print(train_params)
-    trainer.train()
+    trainer.train(load_best_model=False)
 
 
 def test_model(args):
