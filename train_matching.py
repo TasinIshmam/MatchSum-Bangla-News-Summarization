@@ -167,7 +167,8 @@ if __name__ == '__main__':
                         help="Testing will use the same metric that is used for validation set evaluation during testing")
 
     args = parser.parse_known_args()[0]
-    
+    print(args)
+
     if args.mode == 'train':
         print('Training process of MatchSum !!!')
         train_model(args)
