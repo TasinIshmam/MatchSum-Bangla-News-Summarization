@@ -31,6 +31,7 @@ def configure_training(args):
     params['n_epochs']      = args.n_epochs
     params['valid_steps']   = args.valid_steps
     params['checkpoint_file'] = args.checkpoint_file
+    params['use_validation_metric_for_testing'] = args.use_validation_metric_for_testing
     return devices, params
 
 def train_model(args):
@@ -115,8 +116,16 @@ def test_model(args):
 
         # configure testing
         dec_path, ref_path = get_result_path(args.save_path, cur_model)
-        test_metric = MatchRougeMetric(data=read_jsonl(data_paths['test']), dec_path=dec_path, 
-                                  ref_path=ref_path, n_total = len(test_set))
+
+
+        if args.use_validation_metric_for_testing:
+            test_metric = ValidMetric(save_path=dec_path, data=read_jsonl(data_paths['test']))
+        else:
+            test_metric = MatchRougeMetric(data=read_jsonl(data_paths['test']), dec_path=dec_path,
+                                           ref_path=ref_path, n_total=len(test_set))
+
+
+
         tester = Tester(data=test_set, model=model, metrics=[test_metric], 
                         batch_size=args.batch_size, device=device, use_tqdm=True)
         tester.test()
@@ -154,6 +163,8 @@ if __name__ == '__main__':
                         help='number of update steps for validation and saving checkpoint', type=int)
     parser.add_argument('--checkpoint_file', default=None,
                         help='Use checkpoint Weight file to restart training', type=str)
+    parser.add_argument('--use_validation_metric_for_testing', default=False, required=False, type=bool,
+                        help="Testing will use the same metric that is used for validation set evaluation during testing")
 
     args = parser.parse_known_args()[0]
     
