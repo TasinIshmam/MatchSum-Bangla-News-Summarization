@@ -78,13 +78,6 @@ class ValidMetric(MetricBase):
         self.Error = 0
 
         self.cur_idx = 0
-    
-    # an approximate method of calculating ROUGE
-    def fast_rouge(self, dec, ref):
-        if dec == '' or ref == '':
-            return 0.0
-        scores = self.rouge.get_scores(dec, ref)
-        return (scores[0]['rouge-1']['f'] + scores[0]['rouge-2']['f'] + scores[0]['rouge-l']['f']) / 3
 
 
 
@@ -141,6 +134,10 @@ class MatchRougeMetric(MetricBase):
         self.cur_idx = 0
         self.ext = []
         self.start = time()
+        self.ROUGE_1_sum = 0
+        self.ROUGE_2_sum = 0
+        self.ROUGE_L_sum = 0
+
 
     
     def evaluate(self, score):
@@ -152,8 +149,13 @@ class MatchRougeMetric(MetricBase):
              ), end='')
     
     def get_metric(self, reset=True):
-        
         print('\nStart writing files !!!')
+
+        if self.cur_idx != len(self.ext):
+            print(f"[WARNING] self.cur_idx != len(self.ext)")
+            print(f"self.cur_idx : {self.cur_idx}")
+            print(f"len(self.ext) : {len(self.ext)}")
+
         for i, ext in enumerate(self.ext):
             sent_ids = self.data[i]['indices'][ext]
             dec, ref = [], []
@@ -164,6 +166,12 @@ class MatchRougeMetric(MetricBase):
             for sent in self.data[i]['summary']:
                 ref.append(sent)
 
+            R_1, R_2, R_L = eval_rouge_bangla(merge_array_of_strings(dec), merge_array_of_strings(ref))
+
+            self.ROUGE_1_sum += R_1
+            self.ROUGE_2_sum += R_2
+            self.ROUGE_L_sum += R_L
+
             with open(join(self.dec_path, '{}.dec'.format(i)), 'w') as f:
                 for sent in dec:
                     print(sent, file=f)
@@ -172,14 +180,27 @@ class MatchRougeMetric(MetricBase):
                     print(sent, file=f)
         
         print('Start evaluating ROUGE score !!!')
-        R_1, R_2, R_L = eval_rouge_bangla(merge_array_of_strings(dec),merge_array_of_strings(ref))
-        eval_result = {'ROUGE-1': R_1, 'ROUGE-2': R_2, 'ROUGE-L':R_L}
+
+        R1_mean = self.ROUGE_1_sum / len(self.ext)
+        R2_mean = self.ROUGE_2_sum / len(self.ext)
+        RL_mean = self.ROUGE_L_sum / len(self.ext)
+
+        eval_result = {'ROUGE-1': R1_mean, 'ROUGE-2': R2_mean, 'ROUGE-L': RL_mean}
+
+        with open(join(self.dec_path, 'result.txt'), 'w') as f:
+            json.dump(eval_result, f, indent=4, ensure_ascii=False)
+
+        with open(join(self.ref_path, 'result.txt'), 'w') as f:
+            json.dump(eval_result, f, indent=4, ensure_ascii=False)
 
         if reset == True:
             self.cur_idx = 0
             self.ext = []
             self.data = []
             self.start = time()
+            self.ROUGE_1_sum = 0
+            self.ROUGE_2_sum = 0
+            self.ROUGE_L_sum = 0
         return eval_result
 
 
