@@ -120,6 +120,7 @@ def test_model(args):
 
         if args.use_validation_metric_for_testing:
             test_metric = ValidMetric(save_path=dec_path, data=read_jsonl(data_paths['test']))
+            print("Using validation metric instead of test metric")
         else:
             test_metric = MatchRougeMetric(data=read_jsonl(data_paths['test']), dec_path=dec_path,
                                            ref_path=ref_path, n_total=len(test_set))
